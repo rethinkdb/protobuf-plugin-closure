@@ -1,6 +1,6 @@
 # Copyright (c) 2011 SameGoal LLC.
 # All Rights Reserved.
-# Author: Andy Hochhaus
+# Author: Andy Hochhaus <ahochhaus@samegoal.com>
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,19 +17,29 @@
 {
   'targets': [
     {
+      'target_name': 'protobuf_js_pb',
+      'type': '<(library)',
+      'dependencies': [
+        '../third-party/protobuf/protobuf.gyp:protoc#host',
+      ],
+      'sources': [
+        'js/javascript_package.proto',
+        'js/int64_encoding.proto',
+      ],
+    },
+    {
       'target_name': 'protoc-gen-js',
       'type': 'executable',
       'include_dirs': [
         '.',
       ],
       'dependencies': [
+        'protobuf_js_pb',
         '../third-party/protobuf/protobuf.gyp:protobuf_full_use_sparingly',
       ],
       'sources': [
         'js/code_generator.cpp',
-        'js/protoc-gen-js.cpp',
-        'js/int64_encoding.pb.cc',
-        'js/javascript_package.pb.cc',
+        'js/protoc_gen_js.cpp',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -50,7 +60,7 @@
       ],
       'sources': [
         'cppjs/code_generator.cpp',
-        'cppjs/protoc-gen-cppjs.cpp',
+        'cppjs/protoc_gen_cppjs.cpp',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -61,22 +71,34 @@
       ],
     },
     {
-      'target_name': 'cppjs-lib',
+      'target_name': 'test_pb',
       'type': '<(library)',
-      'include_dirs': [
-        '.',
-      ],
       'dependencies': [
-        '../third-party/protobuf/protobuf.gyp:protobuf_lite',
+        'protobuf_js_pb',
+        'protoc-gen-js',
+        'protoc-gen-cppjs',
+        '../third-party/protobuf/protobuf.gyp:closure_protoc',
       ],
       'sources': [
-        'cppjs/lib.cpp',
+        'js/package_test.proto',
+        'js/test.proto',
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '..',
-        ],
-      },
+    },
+    {
+      'target_name': 'cppjs_test',
+      'type': 'executable',
+      'dependencies': [
+        'test_pb',
+        '../third-party/googletest/gtest.gyp:gtest',
+        '../third-party/google-glog/glog.gyp:glog',
+        '../third-party/protobuf/protobuf.gyp:protobuf_full_use_sparingly',
+      ],
+      'include_dirs' : [
+        '..',
+      ],
+      'sources': [
+        'cppjs/cppjs_test.cpp',
+      ],
     },
   ],
 }

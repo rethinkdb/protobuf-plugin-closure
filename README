@@ -1,6 +1,6 @@
 # Copyright (c) 2010-2011 SameGoal LLC.
 # All Rights Reserved.
-# Author: Andy Hochhaus
+# Author: Andy Hochhaus <ahochhaus@samegoal.com>
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ The "js" plugin is useful to access protocol buffers from javascript.
 Additionally, the "cppjs" directory contains a plugin that (de)serializes
 to/from the json based protocol buffer encodings assumed by closure-library.
 You can use this plugin to share protocol buffers between a C++ based server
-and a javascript client. Note that the "cppjs" generated code depends on the
-lib.cpp library which must also be compiled into your code.
+and a javascript client.
 
 The supplied protobuf.gyp file is used with the GYP build system [2] to compile
 the plugins and supporting library. Note that this file is written to assume
@@ -43,9 +42,6 @@ $ ./build/third-party/protobuf/bin/protoc \
     --cpp_out=. \
     javascript_package.proto
 
-[This step may be optional as I have provided a "pre-built" set of dependency
- files.]
-
 Next compile the plugin(s) as follows:
 
 $ g++ -I ./build/third-party/protobuf/include/ \
@@ -53,7 +49,7 @@ $ g++ -I ./build/third-party/protobuf/include/ \
     ./protobuf/src/google/protobuf/compiler/plugin.pb.cc \
     ./protobuf/src/google/protobuf/compiler/plugin.cc \
     ./js/code_generator.cpp \
-    ./js/protoc-gen-js.cpp \
+    ./js/protoc_gen_js.cpp \
     ./js/javascript_package.pb.cc \
     ./js/int64_encoding.pb.cc \
     -l:./build/third-party/protobuf/lib/libprotobuf.a \
@@ -65,7 +61,7 @@ $ g++ -I ./build/third-party/protobuf/include/ \
     ./protobuf/src/google/protobuf/compiler/plugin.pb.cc \
     ./protobuf/src/google/protobuf/compiler/plugin.cc \
     ./cppjs/code_generator.cpp \
-    ./cppjs/protoc-gen-cppjs.cpp \
+    ./cppjs/protoc_gen_cppjs.cpp \
     -l:./build/third-party/protobuf/lib/libprotobuf.a \
     -l:./build/third-party/protobuf/lib/libprotoc.a \
     -o ./build/protobuf/cppjs/protoc-gen-cppjs
@@ -81,9 +77,6 @@ $ ./build/third-party/protobuf/bin/protoc \
     --cpp_out=/tmp/foo/ \
     --cppjs_out=/tmp/foo/ \
     test.proto
-
-If using cppjs you will also need to compile the supporting library
-"cppjs/lib.cpp" as necessary.
 
 Notes:
 
@@ -118,8 +111,8 @@ Notes:
   have the default value returned, you must call the getFieldOrDefault()
   variant. This decision was made for performance reasons [6].
 
-* The cppjs plugin is currently really slow (performs many extra copies, etc).
-  I hope to clean up the code as I have more time. Improvements are welcome.
+* The cppjs plugin currently generates sub-optimal (de)serialization code.
+  I hope to improve the code as I have more time. Improvements are appreciated.
 
 [1] http://closure-library.googlecode.com/svn/docs/namespace_goog_proto2.html
 

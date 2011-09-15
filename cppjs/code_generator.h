@@ -1,6 +1,6 @@
 // Copyright (c) 2010 SameGoal LLC.
 // All Rights Reserved.
-// Author: Andy Hochhaus
+// Author: Andy Hochhaus <ahochhaus@samegoal.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -47,22 +47,30 @@ class CodeGenerator : public ::google::protobuf::compiler::CodeGenerator {
       google::protobuf::compiler::OutputDirectory *output_directory,
       std::string *error) const;
 
-  bool HeaderFileIncludes(
+  bool CppFileHelperFunctions(
+      const std::string &output_cpp_file_name,
+      google::protobuf::compiler::OutputDirectory *output_directory,
+      std::string *error) const;
+
+  bool SerializePartialToZeroCopyJsonStream(
+      const std::string &output_cpp_file_name,
+      const google::protobuf::Descriptor *message,
+      google::protobuf::compiler::OutputDirectory *output_directory,
+      std::string *error) const;
+
+  bool ParsePartialFromZeroCopyJsonStream(
+      const std::string &output_cpp_file_name,
+      const google::protobuf::Descriptor *message,
+      google::protobuf::compiler::OutputDirectory *output_directory,
+      std::string *error) const;
+
+  bool InstrumentMessage(
       const std::string &output_h_file_name,
-      google::protobuf::compiler::OutputDirectory *output_directory,
-      std::string *error) const;
-
-  bool SerializeToJsOstream(
       const std::string &output_cpp_file_name,
       const google::protobuf::Descriptor *message,
       google::protobuf::compiler::OutputDirectory *output_directory,
       std::string *error) const;
 
-  bool ParseFromJsIstream(
-      const std::string &output_cpp_file_name,
-      const google::protobuf::Descriptor *message,
-      google::protobuf::compiler::OutputDirectory *output_directory,
-      std::string *error) const;
 };
 
 }  // namespace cppjs

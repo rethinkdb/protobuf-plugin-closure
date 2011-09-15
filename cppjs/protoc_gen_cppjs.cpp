@@ -1,6 +1,6 @@
-// Copyright (c) 2010 SameGoal LLC.
+// Copyright (c) 2010-2011 SameGoal LLC.
 // All Rights Reserved.
-// Author: Andy Hochhaus
+// Author: Andy Hochhaus <ahochhaus@samegoal.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <google/protobuf/compiler/plugin.h>
+#include <stdlib.h>
 
-#include "js/code_generator.h"
+#include <string>
+
+#include "google/protobuf/compiler/plugin.h"
+
+#include "cppjs/code_generator.h"
 
 int main(int argc, char *argv[]) {
-  sg::protobuf::js::CodeGenerator generator("js_plugin");
+  sg::protobuf::cppjs::CodeGenerator generator("cppjs_plugin");
   return google::protobuf::compiler::PluginMain(argc, argv, &generator);
 }

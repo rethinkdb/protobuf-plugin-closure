@@ -8,8 +8,8 @@
 
 syntax = "proto2";
 
-import "javascript_package.proto";
-import "int64_encoding.proto";
+import "js/javascript_package.proto";
+import "js/int64_encoding.proto";
 
 option (javascript_package) = "proto2";
 
