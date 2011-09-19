@@ -145,6 +145,10 @@ const std::string object_key_tag_golden =
     "\"15\":\"abcd\",\"16\":{\"17\":111},\"18\":{\"1\":112},\"21\":1,"
     "\"31\":[201,202],\"44\":[\"foo\",\"bar\"]}";
 
+const std::string special_char_string = "\"\\/\b\f\n\r\tÄúɠ";
+const std::string object_key_tag_escapes_golden =
+    "{\"14\":\"\\\"\\\\/\\b\\f\\n\\r\\t\\u00c4\\u00fa\\u0260\","
+    "\"15\":\"\\\"\\\\/\\b\\f\\n\\r\\t\\u00c4\\u00fa\\u0260\"}";
 
 TEST(PbLite, Serialization) {
   TestAllTypes message;
@@ -191,6 +195,28 @@ TEST(ObjectKeyTag, Deserialization) {
   ASSERT_TRUE(
       message.ParsePartialFromObjectKeyTagString(object_key_tag_golden));
   ValidateMessage(message);
+}
+
+TEST(ObjectKeyTag, EscapeSerialization) {
+  TestAllTypes message;
+  message.set_optional_string(special_char_string);
+  message.set_optional_bytes(special_char_string);
+
+  std::string serialized;
+  ASSERT_TRUE(message.SerializePartialToObjectKeyTagString(&serialized));
+  ASSERT_EQ(object_key_tag_escapes_golden, serialized);
+}
+
+TEST(ObjectKeyTag, EscapeDeserialization) {
+  TestAllTypes message;
+  ASSERT_TRUE(
+      message.ParsePartialFromObjectKeyTagString(
+          object_key_tag_escapes_golden));
+
+  ASSERT_TRUE(message.has_optional_string());
+  ASSERT_TRUE(message.has_optional_bytes());
+  ASSERT_EQ(special_char_string, message.optional_string());
+  ASSERT_EQ(special_char_string, message.optional_bytes());
 }
 
 int main(int argc, char **argv) {
