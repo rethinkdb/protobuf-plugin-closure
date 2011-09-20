@@ -302,7 +302,6 @@ bool CodeGenerator::CppFileHelperFunctions(
       "  if (!WriteRaw(\"\\\"\", output)) {\n"
       "    return false;\n"
       "  }\n"
-      "  // TODO(ahochhaus): escape value\n"
       "  if (!WriteEscaped(value, output)) {\n"
       "    return false;\n"
       "  }\n"
