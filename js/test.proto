@@ -3,7 +3,7 @@
 // A proto file used for unit testing the ECMAScript
 // compiler and framework.
 //
-// Modified by Andy Hochhaus (ahochhaus@samegoal.com) to be compatible with
+// Modified by Andy Hochhaus <ahochhaus@samegoal.com> to be compatible with
 // use in a protoc compiler plugin.
 
 syntax = "proto2";
@@ -19,7 +19,7 @@ message TestAllTypes {
   }
 
   enum NestedEnum {
-    FOO = 1;
+    FOO = 0;
     BAR = 2;
     BAZ = 3;
   }

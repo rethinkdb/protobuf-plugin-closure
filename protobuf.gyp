@@ -38,8 +38,8 @@
         '../third-party/protobuf/protobuf.gyp:protobuf_full_use_sparingly',
       ],
       'sources': [
-        'js/code_generator.cpp',
-        'js/protoc_gen_js.cpp',
+        'js/code_generator.cc',
+        'js/protoc_gen_js.cc',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -50,17 +50,18 @@
       ],
     },
     {
-      'target_name': 'protoc-gen-cppjs',
+      'target_name': 'protoc-gen-ccjs',
       'type': 'executable',
       'include_dirs': [
         '.',
       ],
       'dependencies': [
+        'protobuf_js_pb',
         '../third-party/protobuf/protobuf.gyp:protobuf_full_use_sparingly',
       ],
       'sources': [
-        'cppjs/code_generator.cpp',
-        'cppjs/protoc_gen_cppjs.cpp',
+        'ccjs/code_generator.cc',
+        'ccjs/protoc_gen_ccjs.cc',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -76,7 +77,7 @@
       'dependencies': [
         'protobuf_js_pb',
         'protoc-gen-js',
-        'protoc-gen-cppjs',
+        'protoc-gen-ccjs',
         '../third-party/protobuf/protobuf.gyp:closure_protoc',
       ],
       'sources': [
@@ -85,7 +86,7 @@
       ],
     },
     {
-      'target_name': 'cppjs_test',
+      'target_name': 'ccjs_test',
       'type': 'executable',
       'dependencies': [
         'test_pb',
@@ -97,7 +98,7 @@
         '..',
       ],
       'sources': [
-        'cppjs/cppjs_test.cpp',
+        'ccjs/ccjs_test.cc',
       ],
     },
   ],
