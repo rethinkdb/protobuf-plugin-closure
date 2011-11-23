@@ -121,7 +121,7 @@ const std::string pblite_golden =
     "[null,101,\"102\",103,\"104\",105,\"106\",107,\"108\",109,\"110\","
     "111.5,112.5,1,\"test\",\"abcd\",[null,null,null,null,null,null,null,"
     "null,null,null,null,null,null,null,null,null,null,111],null,[null,112],"
-    "null,null,1,null,null,null,null,null,null,null,null,null,[201,202],"
+    "null,null,0,null,null,null,null,null,null,null,null,null,[201,202],"
     "null,null,null,null,null,null,null,null,null,null,null,null,[\"foo\","
     "\"bar\"]]";
 
@@ -141,7 +141,7 @@ const std::string object_key_name_golden =
     "\"optional_float\":111.5,\"optional_double\":112.5,"
     "\"optional_bool\":true,\"optional_string\":\"test\","
     "\"optional_bytes\":\"abcd\",\"optionalgroup\":{\"a\":111},"
-    "\"optional_nested_message\":{\"b\":112},\"optional_nested_enum\":1,"
+    "\"optional_nested_message\":{\"b\":112},\"optional_nested_enum\":0,"
     "\"repeated_int32\":[201,202],\"repeated_string\":[\"foo\",\"bar\"]}";
 
 const std::string large_int_object_key_name_golden =
@@ -153,7 +153,7 @@ const std::string object_key_tag_golden =
     "{\"1\":101,\"2\":\"102\",\"3\":103,\"4\":\"104\",\"5\":105,"
     "\"6\":\"106\",\"7\":107,\"8\":\"108\",\"9\":109,\"10\":\"110\","
     "\"11\":111.5,\"12\":112.5,\"13\":true,\"14\":\"test\","
-    "\"15\":\"abcd\",\"16\":{\"17\":111},\"18\":{\"1\":112},\"21\":1,"
+    "\"15\":\"abcd\",\"16\":{\"17\":111},\"18\":{\"1\":112},\"21\":0,"
     "\"31\":[201,202],\"44\":[\"foo\",\"bar\"]}";
 
 const std::string large_int_object_key_tag_golden =
