@@ -122,15 +122,13 @@ const std::string pblite_golden =
     "111.5,112.5,1,\"test\",\"abcd\",[null,null,null,null,null,null,null,"
     "null,null,null,null,null,null,null,null,null,null,111],null,[null,112],"
     "null,null,0,null,null,null,null,null,null,null,null,null,[201,202],"
-    "null,null,null,null,null,null,null,null,null,null,null,null,[\"foo\","
-    "\"bar\"]]";
+    "[],[],[],[],[],[],[],[],[],[],[],[],[\"foo\",\"bar\"]]";
 
 const std::string large_int_pblite_golden =
     "[null,null,null,null,\"1000000000000000001\",null,null,null,null,null,"
     "null,null,null,null,null,null,null,null,null,null,null,null,null,null,"
-    "null,null,null,null,null,null,null,null,null,null,null,null,null,null,"
-    "null,null,null,null,null,null,null,null,null,null,null,null,"
-    "1000000000000000001,\"1000000000000000001\"]";
+    "null,null,null,null,null,null,null,[],[],[],[],[],[],[],[],[],[],[],[],"
+    "[],[],[],[],null,[],[],1000000000000000001,\"1000000000000000001\"]";
 
 const std::string object_key_name_golden =
     "{\"optional_int32\":101,\"optional_int64\":\"102\","

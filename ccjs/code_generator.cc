@@ -81,6 +81,7 @@ std::string ReplaceAll(
 }
 
 const std::string cc_header_boilerplate =
+    "#include <set>\n"
     "#include <stdio.h>\n"
     "\n"
     "#include <google/protobuf/io/zero_copy_stream.h>\n"
@@ -254,6 +255,7 @@ const std::string cc_header_boilerplate =
     "\n"
     "bool WritePbLiteNullEntries(\n"
     "    const google::protobuf::uint32 field_num,\n"
+    "    const std::set<google::protobuf::uint32> repeated_field_set,\n"
     "    google::protobuf::uint32 *cur_field_num,\n"
     "    google::protobuf::io::ZeroCopyOutputStream *output) {\n"
     "  if (*cur_field_num > field_num) {\n"
@@ -261,8 +263,13 @@ const std::string cc_header_boilerplate =
     "  }\n"
     "\n"
     "  while (*cur_field_num < field_num) {\n"
-    "    const std::string write_str = (*cur_field_num != 0) ?\n"
-    "        \",null\" : \"null\";\n"
+    "    std::string write_str = (*cur_field_num != 0) ? \",\" : \"\";\n"
+    "    if (repeated_field_set.find(*cur_field_num) ==\n"
+    "        repeated_field_set.end()) {\n"
+    "      write_str += \"null\";\n"
+    "    } else {\n"
+    "      write_str += \"[]\";\n"
+    "    }\n"
     "    if (!WriteRaw(write_str, output)) {\n"
     "      RTN_FALSE;\n"
     "    }\n"
@@ -897,6 +904,24 @@ bool CodeGenerator::SerializePartialToZeroCopyJsonStream(
       "  RTN_FALSE;\n"
       "}\n");
 
+  std::string rep_field_set =
+      "std::set<google::protobuf::uint32> rep_field_set;";
+  for (int j = 0; j < message->field_count(); ++j) {
+    const google::protobuf::FieldDescriptor *field = message->field(j);
+    if (field->label() == google::protobuf::FieldDescriptor::LABEL_REPEATED) {
+      char field_number[13];  // ceiling(32/3) + sign char + NULL
+      if (snprintf(field_number,
+                   sizeof(field_number),
+                   "%d",
+                   field->number()) >= 13) {
+        return false;
+      }
+      rep_field_set += ("rep_field_set.insert(" +
+                        std::string(field_number) +
+                        ");");
+    }
+  }
+
   for (int j = 0; j < message->field_count(); ++j) {
     const google::protobuf::FieldDescriptor *field = message->field(j);
     if (field->label() != google::protobuf::FieldDescriptor::LABEL_REPEATED) {
@@ -917,8 +942,9 @@ bool CodeGenerator::SerializePartialToZeroCopyJsonStream(
     }
     cc_printer.Print(
         "if (type == PB_LITE) {\n"
+        "  $rep_field_set$\n"
         "  if (!WritePbLiteNullEntries(\n"
-        "      $field_num$, &cur_field_num, output)) {\n"
+        "      $field_num$, rep_field_set, &cur_field_num, output)) {\n"
         "    RTN_FALSE;\n"
         "  }\n"
         "} else {\n"
@@ -935,6 +961,7 @@ bool CodeGenerator::SerializePartialToZeroCopyJsonStream(
         "  }\n"
         "  prev_fields = true;\n"
         "}\n",
+        "rep_field_set", rep_field_set,
         "field_num", field_number,
         "field_name", field->name());
 
