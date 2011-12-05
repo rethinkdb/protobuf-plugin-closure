@@ -130,6 +130,8 @@ const std::string large_int_pblite_golden =
     "null,null,null,null,null,null,null,[],[],[],[],[],[],[],[],[],[],[],[],"
     "[],[],[],[],null,[],[],1000000000000000001,\"1000000000000000001\"]";
 
+const std::string pblite_package_golden = "[null,1," + pblite_golden + "]";
+
 const std::string object_key_name_golden =
     "{\"optional_int32\":101,\"optional_int64\":\"102\","
     "\"optional_uint32\":103,\"optional_uint64\":\"104\","
@@ -147,6 +149,9 @@ const std::string large_int_object_key_name_golden =
     "\"optional_int64_number\":1000000000000000001,"
     "\"optional_int64_string\":\"1000000000000000001\"}";
 
+const std::string object_key_name_package_golden =
+    "{\"optional_int32\":1,\"other_all\":" + object_key_name_golden + "}";
+
 const std::string object_key_tag_golden =
     "{\"1\":101,\"2\":\"102\",\"3\":103,\"4\":\"104\",\"5\":105,"
     "\"6\":\"106\",\"7\":107,\"8\":\"108\",\"9\":109,\"10\":\"110\","
@@ -158,6 +163,9 @@ const std::string large_int_object_key_tag_golden =
     "{\"4\":\"1000000000000000001\","
     "\"50\":1000000000000000001,"
     "\"51\":\"1000000000000000001\"}";
+
+const std::string object_key_tag_package_golden =
+    "{\"1\":1,\"2\":" + object_key_tag_golden + "}";
 
 const std::string special_char_string = "\"\\/\b\f\n\r\tÄúɠ";
 const std::string object_key_tag_escapes_golden =
@@ -184,6 +192,16 @@ TEST(PbLite, LargeIntSerialization) {
   ASSERT_EQ(large_int_pblite_golden, serialized);
 }
 
+TEST(PbLite, PackageSerialization) {
+  someprotopackage::TestPackageTypes message;
+  message.set_optional_int32(1);
+  auto test_message = message.mutable_other_all();
+  PopulateMessage(test_message);
+
+  std::string serialized;
+  ASSERT_TRUE(message.SerializePartialToPbLiteString(&serialized));
+  ASSERT_EQ(pblite_package_golden, serialized);
+}
 
 TEST(PbLite, Deserialization) {
   TestAllTypes message;
@@ -197,6 +215,13 @@ TEST(PbLite, LargeIntDeserialization) {
   ASSERT_EQ(1000000000000000001, message.optional_uint64());
   ASSERT_EQ(1000000000000000001, message.optional_int64_number());
   ASSERT_EQ(1000000000000000001, message.optional_int64_string());
+}
+
+TEST(PbLite, PackageDeserialization) {
+  someprotopackage::TestPackageTypes message;
+  ASSERT_TRUE(message.ParsePartialFromPbLiteString(pblite_package_golden));
+  ASSERT_EQ(1, message.optional_int32());
+  ValidateMessage(message.other_all());
 }
 
 TEST(ObjectKeyName, Serialization) {
@@ -219,6 +244,17 @@ TEST(ObjectKeyName, LargeIntSerialization) {
   ASSERT_EQ(large_int_object_key_name_golden, serialized);
 }
 
+TEST(ObjectKeyName, PackageSerialization) {
+  someprotopackage::TestPackageTypes message;
+  message.set_optional_int32(1);
+  auto test_message = message.mutable_other_all();
+  PopulateMessage(test_message);
+
+  std::string serialized;
+  ASSERT_TRUE(message.SerializePartialToObjectKeyNameString(&serialized));
+  ASSERT_EQ(object_key_name_package_golden, serialized);
+}
+
 TEST(ObjectKeyName, Deserialization) {
   TestAllTypes message;
   ASSERT_TRUE(
@@ -233,6 +269,14 @@ TEST(ObjectKeyName, LargeIntDeserialization) {
   ASSERT_EQ(1000000000000000001, message.optional_uint64());
   ASSERT_EQ(1000000000000000001, message.optional_int64_number());
   ASSERT_EQ(1000000000000000001, message.optional_int64_string());
+}
+
+TEST(ObjectKeyName, PackageDeserialization) {
+  someprotopackage::TestPackageTypes message;
+  ASSERT_TRUE(message.ParsePartialFromObjectKeyNameString(
+      object_key_name_package_golden));
+  ASSERT_EQ(1, message.optional_int32());
+  ValidateMessage(message.other_all());
 }
 
 TEST(ObjectKeyTag, Serialization) {
@@ -255,6 +299,17 @@ TEST(ObjectKeyTag, LargeIntSerialization) {
   ASSERT_EQ(large_int_object_key_tag_golden, serialized);
 }
 
+TEST(ObjectKeyTag, PackageSerialization) {
+  someprotopackage::TestPackageTypes message;
+  message.set_optional_int32(1);
+  auto test_message = message.mutable_other_all();
+  PopulateMessage(test_message);
+
+  std::string serialized;
+  ASSERT_TRUE(message.SerializePartialToObjectKeyTagString(&serialized));
+  ASSERT_EQ(object_key_tag_package_golden, serialized);
+}
+
 TEST(ObjectKeyTag, Deserialization) {
   TestAllTypes message;
   ASSERT_TRUE(
@@ -269,6 +324,14 @@ TEST(ObjectKeyTag, LargeIntDeserialization) {
   ASSERT_EQ(1000000000000000001, message.optional_uint64());
   ASSERT_EQ(1000000000000000001, message.optional_int64_number());
   ASSERT_EQ(1000000000000000001, message.optional_int64_string());
+}
+
+TEST(ObjectKeyTag, PackageDeserialization) {
+  someprotopackage::TestPackageTypes message;
+  ASSERT_TRUE(message.ParsePartialFromObjectKeyTagString(
+      object_key_tag_package_golden));
+  ASSERT_EQ(1, message.optional_int32());
+  ValidateMessage(message.other_all());
 }
 
 TEST(ObjectKeyTag, EscapeSerialization) {

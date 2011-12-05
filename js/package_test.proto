@@ -13,5 +13,5 @@ package someprotopackage;
 
 message TestPackageTypes {
   optional int32 optional_int32   =  1;
-  optional TestAllTypes other_all = 2;
+  optional TestAllTypes other_all =  2;
 }

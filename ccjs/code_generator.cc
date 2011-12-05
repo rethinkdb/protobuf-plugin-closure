@@ -81,6 +81,7 @@ std::string ReplaceAll(
 }
 
 const std::string cc_header_boilerplate =
+    // "#include <iostream>\n"
     "#include <set>\n"
     "#include <stdio.h>\n"
     "\n"
@@ -1432,10 +1433,12 @@ bool CodeGenerator::ParsePartialFromZeroCopyJsonStream(
             "  if (!ReadToken(false, &token, input)) {\n"
             "    RTN_FALSE;\n"
             "  }\n"
-            "  if (token == TOKEN_SQUARE_CLOSE) {\n"
+            "  if (type == PB_LITE && token == TOKEN_SQUARE_CLOSE ||\n"
+            "      type != PB_LITE && token == TOKEN_CURLY_CLOSE) {\n"
             "    ReadToken(true, &token, input);\n"
             "    break;\n"
-            "  } else if (token == TOKEN_SQUARE_OPEN) {\n"
+            "  } else if (type == PB_LITE && token == TOKEN_SQUARE_OPEN ||\n"
+            "             type != PB_LITE && token == TOKEN_CURLY_OPEN) {\n"
             "    if (!this->add_$name$()->"  // no newline
             "ParsePartialFromZeroCopyJsonStream(type, "  // no newline
             "booleans_as_numbers, input)) {\n"

@@ -20,7 +20,7 @@
       'target_name': 'protobuf_js_pb',
       'type': '<(library)',
       'dependencies': [
-        '../third-party/protobuf/protobuf.gyp:protoc#host',
+        '../third_party/protobuf/protobuf.gyp:protoc#host',
       ],
       'sources': [
         'js/javascript_package.proto',
@@ -35,7 +35,7 @@
       ],
       'dependencies': [
         'protobuf_js_pb',
-        '../third-party/protobuf/protobuf.gyp:protobuf_full_use_sparingly',
+        '../third_party/protobuf/protobuf.gyp:protobuf_full_use_sparingly',
       ],
       'sources': [
         'js/code_generator.cc',
@@ -57,7 +57,7 @@
       ],
       'dependencies': [
         'protobuf_js_pb',
-        '../third-party/protobuf/protobuf.gyp:protobuf_full_use_sparingly',
+        '../third_party/protobuf/protobuf.gyp:protobuf_full_use_sparingly',
       ],
       'sources': [
         'ccjs/code_generator.cc',
@@ -78,7 +78,7 @@
         'protobuf_js_pb',
         'protoc-gen-js',
         'protoc-gen-ccjs',
-        '../third-party/protobuf/protobuf.gyp:closure_protoc',
+        '../third_party/protobuf/protobuf.gyp:closure_protoc',
       ],
       'sources': [
         'js/package_test.proto',
@@ -90,9 +90,9 @@
       'type': 'executable',
       'dependencies': [
         'test_pb',
-        '../third-party/googletest/gtest.gyp:gtest',
-        '../third-party/google-glog/glog.gyp:glog',
-        '../third-party/protobuf/protobuf.gyp:protobuf_full_use_sparingly',
+        '../third_party/googletest/gtest.gyp:gtest',
+        '../third_party/google-glog/glog.gyp:glog',
+        '../third_party/protobuf/protobuf.gyp:protobuf_full_use_sparingly',
       ],
       'include_dirs' : [
         '..',
