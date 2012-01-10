@@ -39,7 +39,7 @@ compiler prior to compiling this plugin. To do so, run protoc as follows:
 $ ./build/third_party/protobuf/bin/protoc \
     -I . \
     -I third_party/protobuf/src/ \
-    --cc_out=. \
+    --cpp_out=. \
     javascript_package.proto
 
 Next compile the plugin(s) as follows:
@@ -74,7 +74,7 @@ $ ./build/third_party/protobuf/bin/protoc \
     -I . \
     -I build/third_party/protobuf/src/ \
     --js_out=/tmp/foo/ \
-    --cc_out=/tmp/foo/ \
+    --cpp_out=/tmp/foo/ \
     --ccjs_out=/tmp/foo/ \
     test.proto
 
