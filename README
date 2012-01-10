@@ -54,7 +54,8 @@ $ g++ -I ./build/third_party/protobuf/include/ \
     ./js/int64_encoding.pb.cc \
     -l:./build/third_party/protobuf/lib/libprotobuf.a \
     -l:./build/third_party/protobuf/lib/libprotoc.a \
-    -o ./build/protobuf/js/protoc-gen-js
+    -o ./build/protobuf/js/protoc-gen-js \
+    -lpthread
 
 $ g++ -I ./build/third_party/protobuf/include/ \
     -I . \
@@ -64,7 +65,8 @@ $ g++ -I ./build/third_party/protobuf/include/ \
     ./ccjs/protoc_gen_ccjs.cc \
     -l:./build/third_party/protobuf/lib/libprotobuf.a \
     -l:./build/third_party/protobuf/lib/libprotoc.a \
-    -o ./build/protobuf/ccjs/protoc-gen-ccjs
+    -o ./build/protobuf/ccjs/protoc-gen-ccjs \
+    -lpthread
 
 Finally, to run the protoc compiler with the plugin(s):
 
