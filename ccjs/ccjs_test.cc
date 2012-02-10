@@ -15,10 +15,11 @@
 // limitations under the License.
 
 #include <stdlib.h>
+#include <gtest/gtest.h>
 
 #include <string>
 
-#include "gtest/gtest.h"
+#include "base/init.h"
 #include "protobuf/js/test.pb.h"
 #include "protobuf/js/package_test.pb.h"
 
@@ -124,13 +125,29 @@ const std::string pblite_golden =
     "null,null,0,null,null,null,null,null,null,null,null,null,[201,202],"
     "[],[],[],[],[],[],[],[],[],[],[],[],[\"foo\",\"bar\"]]";
 
+const std::string pblite_zero_index_golden =
+    "[101,\"102\",103,\"104\",105,\"106\",107,\"108\",109,\"110\","
+    "111.5,112.5,1,\"test\",\"abcd\",[null,null,null,null,null,null,"
+    "null,null,null,null,null,null,null,null,null,null,111],null,[112],"
+    "null,null,0,null,null,null,null,null,null,null,null,null,[201,202],"
+    "[],[],[],[],[],[],[],[],[],[],[],[],[\"foo\",\"bar\"]]";
+
 const std::string large_int_pblite_golden =
     "[null,null,null,null,\"1000000000000000001\",null,null,null,null,null,"
     "null,null,null,null,null,null,null,null,null,null,null,null,null,null,"
     "null,null,null,null,null,null,null,[],[],[],[],[],[],[],[],[],[],[],[],"
     "[],[],[],[],null,[],[],1000000000000000001,\"1000000000000000001\"]";
 
+const std::string large_int_pblite_zero_index_golden =
+    "[null,null,null,\"1000000000000000001\",null,null,null,null,null,"
+    "null,null,null,null,null,null,null,null,null,null,null,null,null,null,"
+    "null,null,null,null,null,null,null,[],[],[],[],[],[],[],[],[],[],[],[],"
+    "[],[],[],[],null,[],[],1000000000000000001,\"1000000000000000001\"]";
+
 const std::string pblite_package_golden = "[null,1," + pblite_golden + "]";
+
+const std::string pblite_package_zero_index_golden =
+    "[1," + pblite_zero_index_golden + "]";
 
 const std::string object_key_name_golden =
     "{\"optional_int32\":101,\"optional_int64\":\"102\","
@@ -220,6 +237,61 @@ TEST(PbLite, LargeIntDeserialization) {
 TEST(PbLite, PackageDeserialization) {
   someprotopackage::TestPackageTypes message;
   ASSERT_TRUE(message.ParsePartialFromPbLiteString(pblite_package_golden));
+  ASSERT_EQ(1, message.optional_int32());
+  ValidateMessage(message.other_all());
+}
+
+TEST(PbLiteZeroIndex, Serialization) {
+  TestAllTypes message;
+  PopulateMessage(&message);
+
+  std::string serialized;
+  ASSERT_TRUE(message.SerializePartialToPbLiteZeroIndexString(&serialized));
+  ASSERT_EQ(pblite_zero_index_golden, serialized);
+}
+
+TEST(PbLiteZeroIndex, LargeIntSerialization) {
+  TestAllTypes message;
+  message.set_optional_uint64(1000000000000000001);
+  message.set_optional_int64_number(1000000000000000001);
+  message.set_optional_int64_string(1000000000000000001);
+
+  std::string serialized;
+  ASSERT_TRUE(message.SerializePartialToPbLiteZeroIndexString(&serialized));
+  ASSERT_EQ(large_int_pblite_zero_index_golden, serialized);
+}
+
+TEST(PbLiteZeroIndex, PackageSerialization) {
+  someprotopackage::TestPackageTypes message;
+  message.set_optional_int32(1);
+  auto test_message = message.mutable_other_all();
+  PopulateMessage(test_message);
+
+  std::string serialized;
+  ASSERT_TRUE(message.SerializePartialToPbLiteZeroIndexString(&serialized));
+  ASSERT_EQ(pblite_package_zero_index_golden, serialized);
+}
+
+TEST(PbLiteZeroIndex, Deserialization) {
+  TestAllTypes message;
+  ASSERT_TRUE(message.ParsePartialFromPbLiteZeroIndexString(
+      pblite_zero_index_golden));
+  ValidateMessage(message);
+}
+
+TEST(PbLiteZeroIndex, LargeIntDeserialization) {
+  TestAllTypes message;
+  ASSERT_TRUE(message.ParsePartialFromPbLiteZeroIndexString(
+      large_int_pblite_zero_index_golden));
+  ASSERT_EQ(1000000000000000001, message.optional_uint64());
+  ASSERT_EQ(1000000000000000001, message.optional_int64_number());
+  ASSERT_EQ(1000000000000000001, message.optional_int64_string());
+}
+
+TEST(PbLiteZeroIndex, PackageDeserialization) {
+  someprotopackage::TestPackageTypes message;
+  ASSERT_TRUE(message.ParsePartialFromPbLiteZeroIndexString(
+      pblite_package_zero_index_golden));
   ASSERT_EQ(1, message.optional_int32());
   ValidateMessage(message.other_all());
 }
@@ -356,7 +428,9 @@ TEST(ObjectKeyTag, EscapeDeserialization) {
   ASSERT_EQ(special_char_string, message.optional_bytes());
 }
 
+const char *usage = "ccjs_test\n";
+
 int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+  ::sg::Init(usage, &argc, &argv, true);
   return RUN_ALL_TESTS();
 }

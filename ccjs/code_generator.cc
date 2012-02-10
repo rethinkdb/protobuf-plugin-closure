@@ -224,6 +224,7 @@ const std::string cc_header_boilerplate =
     "    google::protobuf::io::ZeroCopyOutputStream *output) {\n"
     "  char *src_ptr = const_cast<char *> (value.data());\n"
     "  const char *src_end_ptr = src_ptr + value.length();\n"
+    "  std::string json_escaped_str;\n"
     "  while (src_ptr < src_end_ptr) {\n"
     "    char json_escaped_buf[7];\n"
     "    google::protobuf::uint64 json_escaped_size;\n"
@@ -231,10 +232,11 @@ const std::string cc_header_boilerplate =
     "      &src_ptr, src_end_ptr, json_escaped_buf, &json_escaped_size)) {\n"
     "      RTN_FALSE;\n"
     "    }\n"
-    "    if (!WriteRaw(\n"
-    "        std::string(json_escaped_buf, json_escaped_size), output)) {\n"
-    "      RTN_FALSE;\n"
-    "    }\n"
+    "    json_escaped_str += std::string(json_escaped_buf,\n"
+    "                                    json_escaped_size);\n"
+    "  }\n"
+    "  if (!WriteRaw(json_escaped_str, output)) {\n"
+    "    RTN_FALSE;\n"
     "  }\n"
     "  return true;\n"
     "}\n"
@@ -257,6 +259,7 @@ const std::string cc_header_boilerplate =
     "bool WritePbLiteNullEntries(\n"
     "    const google::protobuf::uint32 field_num,\n"
     "    const std::set<google::protobuf::uint32> repeated_field_set,\n"
+    "    const bool start_index_one,\n"
     "    google::protobuf::uint32 *cur_field_num,\n"
     "    google::protobuf::io::ZeroCopyOutputStream *output) {\n"
     "  if (*cur_field_num > field_num) {\n"
@@ -264,7 +267,12 @@ const std::string cc_header_boilerplate =
     "  }\n"
     "\n"
     "  while (*cur_field_num < field_num) {\n"
-    "    std::string write_str = (*cur_field_num != 0) ? \",\" : \"\";\n"
+    "    std::string write_str;\n"
+    "    if (!start_index_one) {\n"
+    "      write_str = (*cur_field_num != 0) ? \",\" : \"\";\n"
+    "    } else {\n"
+    "      write_str = (*cur_field_num != 1) ? \",\" : \"\";\n"
+    "    }\n"
     "    if (repeated_field_set.find(*cur_field_num) ==\n"
     "        repeated_field_set.end()) {\n"
     "      write_str += \"null\";\n"
@@ -276,8 +284,10 @@ const std::string cc_header_boilerplate =
     "    }\n"
     "    ++(*cur_field_num);\n"
     "  }\n"
-    "  if (!WriteRaw(\",\", output)) {\n"
-    "    RTN_FALSE;\n"
+    "  if (!start_index_one || *cur_field_num != 1) {\n"
+    "    if (!WriteRaw(\",\", output)) {\n"
+    "      RTN_FALSE;\n"
+    "    }\n"
     "  }\n"
     "  ++(*cur_field_num);\n"
     "  return true;\n"
@@ -818,9 +828,13 @@ bool CodeGenerator::HeaderFile(
       "bool SerializePartialToZeroCopyJsonStream(\n"
       "    const google::protobuf::uint32 type,\n"
       "    const bool booleans_as_numbers,\n"
+      "    const bool start_index_one,\n"
       "    google::protobuf::io::ZeroCopyOutputStream *output) const;\n"
       "\n"
       "bool SerializePartialToPbLiteString(std::string *output) const;\n"
+      "\n"
+      "bool SerializePartialToPbLiteZeroIndexString(\n"
+      "    std::string *output) const;\n"
       "\n"
       "bool SerializePartialToObjectKeyNameString(\n"
       "    std::string *output) const;\n"
@@ -830,11 +844,18 @@ bool CodeGenerator::HeaderFile(
       "bool ParsePartialFromZeroCopyJsonStream(\n"
       "    const google::protobuf::uint32 type,\n"
       "    const bool booleans_as_numbers,\n"
+      "    const bool start_index_one,\n"
       "    google::protobuf::io::ZeroCopyInputStream *input);\n"
       "\n"
       "bool ParsePartialFromPbLiteArray(const void *data, int size);\n"
       "\n"
+      "bool ParsePartialFromPbLiteZeroIndexArray(\n"
+      "    const void *data, int size);\n"
+      "\n"
       "bool ParsePartialFromPbLiteString(const std::string &output);\n"
+      "\n"
+      "bool ParsePartialFromPbLiteZeroIndexString(\n"
+      "    const std::string &output);\n"
       "\n"
       "bool ParsePartialFromObjectKeyNameArray(const void *data, int size);\n"
       "\n"
@@ -893,12 +914,14 @@ bool CodeGenerator::SerializePartialToZeroCopyJsonStream(
       "bool $name$::SerializePartialToZeroCopyJsonStream(\n"
       "    const google::protobuf::uint32 type,\n"
       "    const bool booleans_as_numbers,\n"
+      "    const bool start_index_one,\n"
       "    google::protobuf::io::ZeroCopyOutputStream *output) const {\n",
       "name", cc_class_name);
   cc_printer.Indent();
   if (message->field_count()) {
-    cc_printer.Print("google::protobuf::uint32 cur_field_num = 0;\n"
-                      "bool prev_fields = false;\n");
+    cc_printer.Print(
+        "google::protobuf::uint32 cur_field_num = start_index_one ? 1 : 0;\n"
+        "bool prev_fields = false;\n");
   }
   cc_printer.Print(
       "if (!WriteRaw(type == PB_LITE ? \"[\" : \"{\", output)) {\n"
@@ -945,7 +968,8 @@ bool CodeGenerator::SerializePartialToZeroCopyJsonStream(
         "if (type == PB_LITE) {\n"
         "  $rep_field_set$\n"
         "  if (!WritePbLiteNullEntries(\n"
-        "      $field_num$, rep_field_set, &cur_field_num, output)) {\n"
+        "      $field_num$, rep_field_set, start_index_one, &cur_field_num,\n"
+        "      output)) {\n"
         "    RTN_FALSE;\n"
         "  }\n"
         "} else {\n"
@@ -1035,7 +1059,7 @@ bool CodeGenerator::SerializePartialToZeroCopyJsonStream(
         cc_printer.Print(
             "if (!this->$name$()."  // no newline
             "SerializePartialToZeroCopyJsonStream(type, "  // no newline
-            "booleans_as_numbers, output)) {\n"
+            "booleans_as_numbers, start_index_one, output)) {\n"
             "  RTN_FALSE;\n"
             "}\n",
             "name", field->lowercase_name());
@@ -1044,7 +1068,7 @@ bool CodeGenerator::SerializePartialToZeroCopyJsonStream(
             "for (int i = 0; i < this->$name$_size(); ++i) {\n"
             "  if (!this->$name$(i)."  // no newline
             "SerializePartialToZeroCopyJsonStream(type, "  // no newline
-            "booleans_as_numbers, output)) {\n"
+            "booleans_as_numbers, start_index_one, output)) {\n"
             "    RTN_FALSE;\n"
             "  }\n"
             "  if (i < this->$name$_size() - 1) {\n"
@@ -1097,7 +1121,7 @@ bool CodeGenerator::SerializePartialToZeroCopyJsonStream(
             "  char buffer[$buffer_size$];\n"
             "  if (snprintf(buffer, sizeof(buffer), "  // no newline
             "\"$format$\", this->$name$()) >= "  // no newline
-            "$buffer_size$) {\n"  // no newline
+            "$buffer_size$) {\n"
             "    RTN_FALSE;\n"
             "  }\n"
             "  if (!WriteRaw(buffer, output)) {\n"
@@ -1159,21 +1183,28 @@ bool CodeGenerator::SerializePartialToZeroCopyJsonStream(
       "    std::string *output) const {\n"
       "  google::protobuf::io::StringOutputStream target(output);\n"
       "  return SerializePartialToZeroCopyJsonStream(\n"
-      "      PB_LITE, true, &target);\n"
+      "      PB_LITE, true, false, &target);\n"
+      "}\n"
+      "\n"
+      "bool $name$::SerializePartialToPbLiteZeroIndexString(\n"
+      "    std::string *output) const {\n"
+      "  google::protobuf::io::StringOutputStream target(output);\n"
+      "  return SerializePartialToZeroCopyJsonStream(\n"
+      "      PB_LITE, true, true, &target);\n"
       "}\n"
       "\n"
       "bool $name$::SerializePartialToObjectKeyNameString(\n"
       "    std::string *output) const {\n"
       "  google::protobuf::io::StringOutputStream target(output);\n"
       "  return SerializePartialToZeroCopyJsonStream(\n"
-      "      OBJECT_KEY_NAME, false, &target);\n"
+      "      OBJECT_KEY_NAME, false, false, &target);\n"
       "}\n"
       "\n"
       "bool $name$::SerializePartialToObjectKeyTagString(\n"
       "    std::string *output) const {\n"
       "  google::protobuf::io::StringOutputStream target(output);\n"
       "  return SerializePartialToZeroCopyJsonStream(\n"
-      "      OBJECT_KEY_TAG, false, &target);\n"
+      "      OBJECT_KEY_TAG, false, false, &target);\n"
       "}\n"
       "\n",
       "name", cc_class_name);
@@ -1204,6 +1235,7 @@ bool CodeGenerator::ParsePartialFromZeroCopyJsonStream(
       "bool $name$::ParsePartialFromZeroCopyJsonStream(\n"
       "    const google::protobuf::uint32 type,\n"
       "    const bool booleans_as_numbers,\n"
+      "    const bool start_index_one,\n"
       "    google::protobuf::io::ZeroCopyInputStream *input) {\n",
       "name", cc_class_name);
   cc_printer.Indent();
@@ -1215,7 +1247,7 @@ bool CodeGenerator::ParsePartialFromZeroCopyJsonStream(
       "  RTN_FALSE;\n"
       "}\n"
       "\n"
-      "google::protobuf::int32 cur_field_num = 0;\n"
+      "google::protobuf::int32 cur_field_num = start_index_one ? 1 : 0;\n"
       "while (true) {\n"
       "  if (type == PB_LITE) {\n"
       "    if (!ReadPbLiteNextTag(&cur_field_num, &token, input)) {\n"
@@ -1423,7 +1455,7 @@ bool CodeGenerator::ParsePartialFromZeroCopyJsonStream(
         cc_printer.Print(
             "if (!this->mutable_$name$()->"  // no newline
             "ParsePartialFromZeroCopyJsonStream(type, "  // no newline
-            "booleans_as_numbers, input)) {\n"
+            "booleans_as_numbers, start_index_one, input)) {\n"
             "  RTN_FALSE;\n"
             "}\n",
             "name", field->lowercase_name());
@@ -1441,7 +1473,7 @@ bool CodeGenerator::ParsePartialFromZeroCopyJsonStream(
             "             type != PB_LITE && token == TOKEN_CURLY_OPEN) {\n"
             "    if (!this->add_$name$()->"  // no newline
             "ParsePartialFromZeroCopyJsonStream(type, "  // no newline
-            "booleans_as_numbers, input)) {\n"
+            "booleans_as_numbers, start_index_one, input)) {\n"
             "      RTN_FALSE;\n"
             "    }\n"
             "  } else {\n"
@@ -1599,8 +1631,16 @@ bool CodeGenerator::ParsePartialFromZeroCopyJsonStream(
       "    const void *data, int size) {\n"
       "  google::protobuf::io::ArrayInputStream input(\n"
       "      reinterpret_cast<const google::protobuf::uint8 *>(data), size);\n"
-      "  return ParsePartialFromZeroCopyJsonStream(\n"  // no newline
-      "PB_LITE, true, &input);\n"
+      "  return ParsePartialFromZeroCopyJsonStream(\n"
+      "      PB_LITE, true, false, &input);\n"
+      "}\n"
+      "\n"
+      "bool $name$::ParsePartialFromPbLiteZeroIndexArray(\n"
+      "    const void *data, int size) {\n"
+      "  google::protobuf::io::ArrayInputStream input(\n"
+      "      reinterpret_cast<const google::protobuf::uint8 *>(data), size);\n"
+      "  return ParsePartialFromZeroCopyJsonStream(\n"
+      "      PB_LITE, true, true, &input);\n"
       "}\n"
       "\n"
       "bool $name$::ParsePartialFromPbLiteString(\n"
@@ -1608,12 +1648,18 @@ bool CodeGenerator::ParsePartialFromZeroCopyJsonStream(
       "  return ParsePartialFromPbLiteArray(output.data(), output.size());\n"
       "}\n"
       "\n"
+      "bool $name$::ParsePartialFromPbLiteZeroIndexString(\n"
+      "    const std::string &output) {\n"
+      "  return ParsePartialFromPbLiteZeroIndexArray(\n"
+      "      output.data(), output.size());\n"
+      "}\n"
+      "\n"
       "bool $name$::ParsePartialFromObjectKeyNameArray(\n"
       "    const void *data, int size) {\n"
       "  google::protobuf::io::ArrayInputStream input(\n"
       "      reinterpret_cast<const google::protobuf::uint8 *>(data), size);\n"
-      "  return ParsePartialFromZeroCopyJsonStream(\n"  // no newline
-      "OBJECT_KEY_NAME, false, &input);\n"
+      "  return ParsePartialFromZeroCopyJsonStream(\n"
+      "      OBJECT_KEY_NAME, false, false, &input);\n"
       "}\n"
       "\n"
       "bool $name$::ParsePartialFromObjectKeyNameString(\n"
@@ -1626,8 +1672,8 @@ bool CodeGenerator::ParsePartialFromZeroCopyJsonStream(
       "    const void *data, int size) {\n"
       "  google::protobuf::io::ArrayInputStream input(\n"
       "      reinterpret_cast<const google::protobuf::uint8 *>(data), size);\n"
-      "  return ParsePartialFromZeroCopyJsonStream(\n"  // new newline
-      "OBJECT_KEY_TAG, false, &input);\n"
+      "  return ParsePartialFromZeroCopyJsonStream(\n"
+      "      OBJECT_KEY_TAG, false, false, &input);\n"
       "}\n"
       "\n"
       "bool $name$::ParsePartialFromObjectKeyTagString(\n"
