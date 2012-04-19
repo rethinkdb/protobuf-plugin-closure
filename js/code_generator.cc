@@ -87,11 +87,17 @@ bool CodeGenerator::Generate(
                      file->dependency(i)->message_type(j)->full_name()));
     }
     for (int j = 0; j < file->dependency(i)->enum_type_count(); j++) {
-      printer.Print(
-          "goog.require('$file$');\n",
-          "file",
-          JsFullName(file->dependency(i)->enum_type(j)->file(),
-                     file->dependency(i)->enum_type(j)->full_name()));
+      const std::string enum_name = JsFullName(
+          file->dependency(i)->enum_type(j)->file(),
+          file->dependency(i)->enum_type(j)->full_name());
+      if (enum_name == "Int64Encoding") {
+        // The Int64Encoding enum is special in that it is not used directly
+        // by any of the protobuf messages, instead it is only used internally
+        // by the plugins to determine how to encode JS numbers. Therefore, the
+        // generated *.pb.js file should not goog.require Int64Encoding.
+        continue;
+      }
+      printer.Print("goog.require('$file$');\n", "file", enum_name);
     }
   }
 
