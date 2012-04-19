@@ -86,6 +86,13 @@ bool CodeGenerator::Generate(
           JsFullName(file->dependency(i)->message_type(j)->file(),
                      file->dependency(i)->message_type(j)->full_name()));
     }
+    for (int j = 0; j < file->dependency(i)->enum_type_count(); j++) {
+      printer.Print(
+          "goog.require('$file$');\n",
+          "file",
+          JsFullName(file->dependency(i)->enum_type(j)->file(),
+                     file->dependency(i)->enum_type(j)->full_name()));
+    }
   }
 
   printer.Print("\n");
