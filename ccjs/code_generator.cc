@@ -56,6 +56,7 @@
 
 #include "ccjs/code_generator.h"
 
+#include <stdio.h>
 #include <string>
 
 #include "google/protobuf/descriptor.h"
