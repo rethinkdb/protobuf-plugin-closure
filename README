@@ -63,6 +63,7 @@ $ g++ -I ./build/third_party/protobuf/include/ \
     ./protobuf/src/google/protobuf/compiler/plugin.cc \
     ./ccjs/code_generator.cc \
     ./ccjs/protoc_gen_ccjs.cc \
+    ./js/int64_encoding.pb.cc \
     -l:./build/third_party/protobuf/lib/libprotobuf.a \
     -l:./build/third_party/protobuf/lib/libprotoc.a \
     -o ./build/protobuf/ccjs/protoc-gen-ccjs \
