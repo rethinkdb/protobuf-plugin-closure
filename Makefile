@@ -1,8 +1,8 @@
 # protobuf-plugin-closure build
 
-PREFIX?=/usr
-INCLUDE=$(PREFIX)/include/
-LIB=$(PREFIX)/lib/
+SPREFIX?=/usr
+INCLUDE=$(SPREFIX)/include/
+LIB=$(SPREFIX)/lib/
 PROTOC=protoc
 
 all: javascript_package int64_encoding js_plugin ccjs_plugin
